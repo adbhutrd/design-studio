@@ -1,8 +1,9 @@
 """Open Design Studio — the Streamlit glue UI.
 
 Two modes:
-  * AI bata banaun   — idea lekha, free AI le image banchha.
-  * Afno photo edit  — photo upload gara, edit + bg-remove + upscale + poster.
+  * Generate — describe an idea, a free AI produces the image.
+  * Edit your own photo — upload, edit, remove the background, upscale, compose
+    a poster.
 
 Run:  streamlit run app.py
 """
@@ -22,18 +23,18 @@ settings = get_settings()
 st.title("🎨 Open Design Studio")
 st.caption(
     "Zero-budget design ecosystem — Penpot + ComfyUI + Llama + rembg/Real-ESRGAN. "
-    "Sabai free, browser bata."
+    "All free, from the browser."
 )
 
-MODE_GENERATE = "✨ AI bata banaun (generate)"
-MODE_EDIT = "🖼️ Afno photo edit gara (upload)"
+MODE_GENERATE = "✨ Generate with AI"
+MODE_EDIT = "🖼️ Edit your own photo"
 
 mode = st.radio("Mode", [MODE_GENERATE, MODE_EDIT], horizontal=True, label_visibility="collapsed")
 
 uploaded = None
 if mode == MODE_EDIT:
     uploaded = st.file_uploader(
-        "Photo upload gara (PNG / JPG / WEBP) — phone ko photo pani chalchha",
+        "Upload a photo (PNG / JPG / WEBP) — phone photos work too",
         type=["png", "jpg", "jpeg", "webp"],
     )
     if uploaded is not None:
@@ -41,10 +42,10 @@ if mode == MODE_EDIT:
             meta = editor.info(uploaded.getvalue())
             st.caption(f"Uploaded: {meta['width']}×{meta['height']} px · {meta['format']}")
         except Exception as exc:
-            st.warning(f"Image padhna sakiena: {exc}")
+            st.warning(f"Could not read the image: {exc}")
 
 prompt = st.text_area(
-    "Describe your design idea (Roman Nepali or English)",
+    "Describe your design idea",
     "Dashain sale poster for a Nepali clothing store, warm festive colors",
     height=90,
 )
@@ -55,7 +56,7 @@ with st.sidebar:
     width = st.select_slider("Width", [512, 768, 1024, 1280, 1536], value=1024)
     height = st.select_slider("Height", [512, 768, 1024, 1280, 1536], value=1024)
     steps = st.slider("Sampling steps", 10, 50, 25, 5)
-    make_poster = st.checkbox("Poster bana (headline sahit)", value=True)
+    make_poster = st.checkbox("Compose poster (with headline)", value=True)
 
     st.divider()
     st.header("🧽 Photo cleanup")
@@ -64,7 +65,7 @@ with st.sidebar:
 
     st.divider()
     st.header("🎛️ Photo edit")
-    st.caption("Upload mode ma matra lagu hunchha.")
+    st.caption("Applies in upload mode only.")
     brightness = st.slider("Brightness", 0.2, 2.0, 1.0, 0.05)
     contrast = st.slider("Contrast", 0.2, 2.0, 1.0, 0.05)
     saturation = st.slider("Saturation", 0.0, 2.0, 1.0, 0.05)
@@ -72,8 +73,8 @@ with st.sidebar:
     grayscale = st.checkbox("Black & white", value=False)
     rotation = st.slider("Rotate (°)", 0, 350, 0, 10)
     rounded = st.slider("Rounded corners (px)", 0, 300, 0, 10)
-    resize_width = st.slider("Resize width (0 = rakhnu)", 0, 2048, 0, 32)
-    square_crop = st.checkbox("Center square crop (poster ko lagi)", value=False)
+    resize_width = st.slider("Resize width (0 = keep)", 0, 2048, 0, 32)
+    square_crop = st.checkbox("Center square crop (for posters)", value=False)
 
     st.divider()
     st.caption("**Providers**")
@@ -93,9 +94,9 @@ go = st.button(label, type="primary", width="stretch")
 
 if go:
     if mode == MODE_EDIT and uploaded is None:
-        st.warning("Pehila photo upload garnus.")
+        st.warning("Upload a photo first.")
     elif not prompt.strip() and mode == MODE_GENERATE:
-        st.warning("Pehila idea lekhnus.")
+        st.warning("Describe your idea first.")
     else:
         crop = None
         if mode == MODE_EDIT and square_crop:
@@ -154,9 +155,9 @@ if go:
         progress.progress(1.0)
 
         if result.final is None:
-            st.error("Kei baniena. `.env` ma COMFYUI_GATEWAY_URL wa internet check garnus.")
+            st.error("Nothing was generated. Check COMFYUI_GATEWAY_URL in `.env`, or your internet connection.")
         else:
-            st.success(f"Banayo! Headline: **{result.headline}**  (copy via `{result.provider}`)")
+            st.success(f"Done! Headline: **{result.headline}**  (copy via `{result.provider}`)")
 
             cols = st.columns(3)
             with cols[0]:

@@ -45,7 +45,6 @@ pipeline log and the flow continues with the next free option.
 - [Docker](#docker)
 - [Development](#development)
 - [Limitations](#limitations)
-- [Nepali quick guide](#nepali-quick-guide)
 - [License](#license)
 
 ---
@@ -209,7 +208,7 @@ PYTHONPATH=app .venv/bin/python - <<'PY'
 import pipeline
 photo = open("my-photo.jpg", "rb").read()
 result = pipeline.run_pipeline(
-    "profile poster bana",
+    "make a profile poster",
     source_image=photo,
     edit={"brightness": 1.2, "rounded_corners": 20, "resize_width": 800},
     do_bg_removal=True,
@@ -305,25 +304,6 @@ tracked.
   guaranteed.
 - **Upscaling is only "true HD" with a Real-ESRGAN binary.** Otherwise it is
   Lanczos resampling, which is sharp but does not invent detail.
-
----
-
-## Nepali quick guide
-
-```bash
-bash setup.sh        # ek choti matra
-bash start-all.sh    # cleanup :8000 + gateway :8100 + app :8501
-```
-
-1. Idea lekhnus (Roman Nepali pani chalchha) → Llama le headline ra image-prompt
-   banauchha.
-2. ComfyUI (Colab free GPU) le image banauchha; nalage Pollinations fallback.
-3. `rembg` le background hatauchha, Real-ESRGAN le HD banauchha.
-4. `canvas` le poster banauchha + Penpot-import SVG dinchha.
-5. Poster `app/outputs/` ma save hunchha.
-
-Photo edit garna **upload** mode chhannus — sabai edit local Pillow bata hunchha,
-GPU chahidaina.
 
 ---
 
