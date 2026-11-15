@@ -273,8 +273,10 @@ make down      # stop the stack
 
 The test suite is offline and deterministic: it covers image editing, poster
 composition, SVG export, storage, LLM response parsing, the pipeline glue (with
-network providers stubbed), and the ComfyUI graph builder. CI runs the same two
-commands on every push.
+network providers stubbed), and the ComfyUI graph builder. The same two commands
+run in CI: the workflow is kept at
+[`docs/ci/github-actions.yml`](docs/ci/github-actions.yml) — copy it to
+`.github/workflows/ci.yml` to enable it in your fork.
 
 ### Repository layout
 

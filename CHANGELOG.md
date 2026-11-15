@@ -23,5 +23,6 @@ documented project.
 - Colab notebook for a free-GPU ComfyUI instance behind a Cloudflare tunnel.
 - systemd user service, supervisor script and health timer for always-on use.
 - Docker Compose stack for app + n8n + both side services.
-- Offline pytest suite, ruff configuration and GitHub Actions CI.
+- Offline pytest suite and ruff configuration, plus a ready-to-use GitHub
+  Actions workflow in `docs/ci/`.
 - Project documents: README, CONTRIBUTING, SECURITY, LICENSE (MIT).
