@@ -1,0 +1,36 @@
+# --- secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- runtime state ---------------------------------------------------------
+.venv/
+venv/
+logs/
+app/outputs/
+.run/
+*.pid
+
+# --- python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# --- editors / OS ----------------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- local databases / caches ---------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# --- n8n workflow is source, keep it tracked -------------------------------
+!n8n/workflows/*.json

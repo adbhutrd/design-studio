@@ -1,0 +1,21 @@
+# Image cleanup microservice (background removal + upscaling)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+pillow>=10.3
+numpy>=1.26
+rembg[cpu]>=2.0.50
+onnxruntime>=1.17
+
+# ---------------------------------------------------------------------------
+# Optional "true HD" upscaler. The service works without these (it falls back
+# to a realesrgan-ncnn-vulkan binary if SR_BIN is set, then to Pillow LANCZOS).
+# These are heavy (torch); uncomment on a machine that can afford them.
+#
+# realesrgan>=0.3.0
+# basicsr>=1.4.2
+# torch>=2.2
+# torchvision>=0.17
+#
+# Lighter alternative: download the standalone binary from
+# https://github.com/xinntao/Real-ESRGAN/releases and set SR_BIN to its path.

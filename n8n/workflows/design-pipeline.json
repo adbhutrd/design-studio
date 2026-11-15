@@ -1,0 +1,199 @@
+{
+  "name": "Zero-Budget Design Pipeline (Llama -> ComfyUI -> Cleanup)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "design",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-design",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "design-studio-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"model\": \"{{ $env.GROQ_MODEL || 'llama-3.3-70b-versatile' }}\", \"messages\": [{\"role\": \"system\", \"content\": \"You are a marketing copywriter and AI image-prompt engineer. Reply ONLY with a compact JSON object containing exactly two keys: headline and image_prompt.\"}, {\"role\": \"user\", \"content\": \"{{ $json.body.prompt }}\"}], \"temperature\": 0.7, \"response_format\": {\"type\": \"json_object\"}}",
+        "options": {}
+      },
+      "id": "groq-copy-and-prompt",
+      "name": "Llama Copy + Prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_GROQ_CREDENTIAL_ID",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.COMFYUI_GATEWAY_URL }}/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"prompt\": \"{{ (JSON.parse($json.choices[0].message.content)).image_prompt }}\", \"width\": 1024, \"height\": 1024, \"steps\": 25}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "comfyui-generate",
+      "name": "ComfyUI Generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLEANUP_URL }}/remove-bg",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "cleanup-remove-bg",
+      "name": "Remove Background",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLEANUP_URL }}/upscale?scale=2",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "cleanup-upscale",
+      "name": "Upscale",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "respond-with-image",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1100, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Llama Copy + Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llama Copy + Prompt": {
+      "main": [
+        [
+          {
+            "node": "ComfyUI Generate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ComfyUI Generate": {
+      "main": [
+        [
+          {
+            "node": "Remove Background",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Background": {
+      "main": [
+        [
+          {
+            "node": "Upscale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upscale": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {},
+  "versionId": "design-pipeline-2",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

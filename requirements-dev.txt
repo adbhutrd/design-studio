@@ -1,0 +1,4 @@
+# Development / CI only. Runtime dependencies live next to each service.
+-r app/requirements.txt
+pytest>=8.0
+ruff>=0.6

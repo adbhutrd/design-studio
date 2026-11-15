@@ -1,0 +1,9 @@
+[Unit]
+Description=Open Design Studio health monitor
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash @STUDIO_DIR@/deploy/design-studio-health.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=design-studio-health

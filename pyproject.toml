@@ -1,0 +1,18 @@
+# Tooling configuration only — the project is run as scripts, not packaged.
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["app"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "logs", "app/outputs", "notebooks"]
+
+[tool.ruff.lint]
+# Pyflakes only: undefined names, unused imports/variables, shadowing.
+# Stylistic rules are intentionally not enforced — the codebase already has a
+# consistent house style and reformatting it would bury real diffs.
+select = ["F", "E9"]

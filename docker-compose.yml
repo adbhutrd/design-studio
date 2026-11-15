@@ -1,0 +1,68 @@
+# Self-hosted part of the design studio, in one command:
+#   docker compose up -d
+#
+# Penpot is intentionally NOT bundled here — the official Penpot compose is a
+# multi-service stack (frontend/backend/exporter/postgres/redis/minio). Use the
+# free Penpot cloud, or their own compose:
+#   https://help.penpot.app/technical-guide/getting-started/#install-with-docker
+
+services:
+  cleanup-service:
+    build: ./cleanup-service
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      REMBG_MODEL: "${REMBG_MODEL:-u2net}"
+      SR_BIN: "${SR_BIN:-}"
+    restart: unless-stopped
+
+  comfyui-gateway:
+    build: ./comfyui-gateway
+    ports:
+      - "8100:8100"
+    environment:
+      PORT: "8100"
+      # Point this at the Colab tunnel URL from notebooks/comfyui_colab.ipynb.
+      COMFYUI_URL: "${COMFYUI_URL:-http://host.docker.internal:8188}"
+      COMFYUI_CKPT: "${COMFYUI_CKPT:-sd_xl_base_1.0.safetensors}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      GROQ_MODEL: "${GROQ_MODEL:-llama-3.3-70b-versatile}"
+      COMFYUI_GATEWAY_URL: "http://comfyui-gateway:8100"
+      CLEANUP_URL: "http://cleanup-service:8000"
+      GENERIC_TIMEZONE: "${GENERIC_TIMEZONE:-Asia/Kathmandu}"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - cleanup-service
+      - comfyui-gateway
+    restart: unless-stopped
+
+  design-studio:
+    build: ./app
+    ports:
+      - "8501:8501"
+    environment:
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      COMFYUI_GATEWAY_URL: "http://comfyui-gateway:8100"
+      CLEANUP_URL: "http://cleanup-service:8000"
+      OUTPUT_DIR: "/app/outputs"
+    volumes:
+      - ./app/outputs:/app/outputs
+    depends_on:
+      - cleanup-service
+      - comfyui-gateway
+    restart: unless-stopped
+
+volumes:
+  n8n_data:

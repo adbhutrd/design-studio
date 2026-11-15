@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the Open Design Studio health monitor every 2 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

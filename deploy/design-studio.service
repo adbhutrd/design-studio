@@ -1,0 +1,20 @@
+[Unit]
+Description=Open Design Studio (free Penpot/ComfyUI/Llama/rembg stack)
+After=network-online.target
+Wants=network-online.target
+# Never give up restarting, even if it crash-loops.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=@STUDIO_DIR@
+ExecStart=/bin/bash @STUDIO_DIR@/deploy/run-stack.sh
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=design-studio
+
+[Install]
+WantedBy=default.target
